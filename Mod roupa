@@ -1,0 +1,361 @@
+--// DV HUB • MINI PREMIUM
+--// LocalScript
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "DV_HUB_MINI"
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- FUNÇÕES
+local function Corner(obj, radius)
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, radius)
+	c.Parent = obj
+end
+
+local function Stroke(obj, color, thickness)
+	local s = Instance.new("UIStroke")
+	s.Color = color
+	s.Thickness = thickness
+	s.Transparency = 0.1
+	s.Parent = obj
+end
+
+-- TAMANHO
+local OPEN_SIZE = UDim2.new(0, 185, 0, 105)
+local CLOSED_SIZE = UDim2.new(0, 185, 0, 30)
+
+-- FRAME PRINCIPAL
+local main = Instance.new("Frame")
+main.Name = "DVHub"
+main.Size = OPEN_SIZE
+main.Position = UDim2.new(0.5, -92, 0.5, -52)
+main.BackgroundColor3 = Color3.fromRGB(22, 22, 25)
+main.BorderSizePixel = 0
+main.ZIndex = 2
+main.Parent = gui
+
+Corner(main, 10)
+Stroke(main, Color3.fromRGB(190, 35, 45), 1.2)
+
+-- BARRA DE CIMA
+local top = Instance.new("Frame")
+top.Name = "TopBar"
+top.Size = UDim2.new(1, 0, 0, 30)
+top.BackgroundColor3 = Color3.fromRGB(35, 35, 39)
+top.BorderSizePixel = 0
+top.ZIndex = 4
+top.Parent = main
+
+Corner(top, 10)
+
+-- TAMPA PARA DEIXAR A PARTE DE BAIXO RETA
+local topFix = Instance.new("Frame")
+topFix.Size = UDim2.new(1, 0, 0, 10)
+topFix.Position = UDim2.new(0, 0, 1, -10)
+topFix.BackgroundColor3 = Color3.fromRGB(35, 35, 39)
+topFix.BorderSizePixel = 0
+topFix.ZIndex = 4
+topFix.Parent = top
+
+-- LINHA VERMELHA
+local redLine = Instance.new("Frame")
+redLine.Size = UDim2.new(0, 35, 0, 2)
+redLine.Position = UDim2.new(0, 9, 1, -2)
+redLine.BackgroundColor3 = Color3.fromRGB(230, 35, 45)
+redLine.BorderSizePixel = 0
+redLine.ZIndex = 6
+redLine.Parent = top
+
+Corner(redLine, 2)
+
+-- TÍTULO
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -45, 1, 0)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "DV HUB"
+title.TextColor3 = Color3.fromRGB(245, 245, 245)
+title.TextSize = 13
+title.Font = Enum.Font.GothamBold
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.ZIndex = 6
+title.Parent = top
+
+-- BOTÃO X
+local close = Instance.new("TextButton")
+close.Name = "Close"
+close.Size = UDim2.new(0, 19, 0, 19)
+close.Position = UDim2.new(1, -24, 0, 5)
+close.BackgroundColor3 = Color3.fromRGB(145, 30, 38)
+close.BorderSizePixel = 0
+close.Text = "×"
+close.TextColor3 = Color3.fromRGB(255, 255, 255)
+close.TextSize = 14
+close.Font = Enum.Font.GothamBold
+close.AutoButtonColor = false
+close.ZIndex = 7
+close.Parent = top
+
+Corner(close, 6)
+
+-- EFEITO DO X
+close.MouseEnter:Connect(function()
+	TweenService:Create(
+		close,
+		TweenInfo.new(0.12),
+		{BackgroundColor3 = Color3.fromRGB(220, 40, 50)}
+	):Play()
+end)
+
+close.MouseLeave:Connect(function()
+	TweenService:Create(
+		close,
+		TweenInfo.new(0.12),
+		{BackgroundColor3 = Color3.fromRGB(145, 30, 38)}
+	):Play()
+end)
+
+-- CONTEÚDO
+local content = Instance.new("Frame")
+content.Name = "Content"
+content.Size = UDim2.new(1, -14, 1, -38)
+content.Position = UDim2.new(0, 7, 0, 34)
+content.BackgroundTransparency = 1
+content.ZIndex = 4
+content.Parent = main
+
+-- BOTÃO MOD ROUPA
+local clothesBtn = Instance.new("TextButton")
+clothesBtn.Name = "ClothesButton"
+clothesBtn.Size = UDim2.new(1, 0, 0, 26)
+clothesBtn.Position = UDim2.new(0, 0, 0, 5)
+clothesBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 50) -- Cinza (Off)
+clothesBtn.BorderSizePixel = 0
+clothesBtn.Text = "MOD ROUPA: OFF"
+clothesBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+clothesBtn.TextSize = 10
+clothesBtn.Font = Enum.Font.GothamBold
+clothesBtn.AutoButtonColor = false
+clothesBtn.ZIndex = 5
+clothesBtn.Parent = content
+
+Corner(clothesBtn, 6)
+
+local clothesEnabled = false
+local originalShirtId = ""
+local originalPantsId = ""
+
+clothesBtn.MouseButton1Click:Connect(function()
+	clothesEnabled = not clothesEnabled
+	local char = player.Character
+	if not char then return end
+
+	local shirt = char:FindFirstChildOfClass("Shirt")
+	local pants = char:FindFirstChildOfClass("Pants")
+
+	if clothesEnabled then
+		clothesBtn.Text = "MOD ROUPA: ON"
+		TweenService:Create(clothesBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(220, 40, 50)}):Play()
+
+		-- Salva as roupas que você já tem antes de aplicar a nova
+		if shirt then
+			originalShirtId = shirt.ShirtTemplate
+		else
+			originalShirtId = ""
+		end
+		
+		if pants then
+			originalPantsId = pants.PantsTemplate
+		else
+			originalPantsId = ""
+		end
+
+		if not shirt then
+			shirt = Instance.new("Shirt", char)
+		end
+		if not pants then
+			pants = Instance.new("Pants", char)
+		end
+
+		-- Aplica a roupa personalizada/estilosa
+		shirt.ShirtTemplate = "rbxassetid://14408044719"
+		pants.PantsTemplate = "rbxassetid://14408047702"
+	else
+		clothesBtn.Text = "MOD ROUPA: OFF"
+		TweenService:Create(clothesBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(45, 45, 50)}):Play()
+
+		-- Restaura exatamente as roupas que você já tinha (e apaga a customizada)
+		if shirt then
+			shirt.ShirtTemplate = originalShirtId
+		end
+		if pants then
+			pants.PantsTemplate = originalPantsId
+		end
+	end
+end)
+
+-- BOTÃO RAIO X (X-RAY)
+local xrayBtn = Instance.new("TextButton")
+xrayBtn.Name = "XRayButton"
+xrayBtn.Size = UDim2.new(1, 0, 0, 26)
+xrayBtn.Position = UDim2.new(0, 0, 0, 35)
+xrayBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 50) -- Cinza (Off)
+xrayBtn.BorderSizePixel = 0
+xrayBtn.Text = "RAIO X: OFF"
+xrayBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+xrayBtn.TextSize = 10
+xrayBtn.Font = Enum.Font.GothamBold
+xrayBtn.AutoButtonColor = false
+xrayBtn.ZIndex = 5
+xrayBtn.Parent = content
+
+Corner(xrayBtn, 6)
+
+local xrayEnabled = false
+local originalTransparenciesMap = {}
+
+xrayBtn.MouseButton1Click:Connect(function()
+	xrayEnabled = not xrayEnabled
+
+	if xrayEnabled then
+		xrayBtn.Text = "RAIO X: ON"
+		TweenService:Create(
+			xrayBtn,
+			TweenInfo.new(0.15),
+			{BackgroundColor3 = Color3.fromRGB(220, 40, 50)}
+		):Play()
+
+		task.spawn(function()
+			while xrayEnabled do
+				for _, obj in ipairs(workspace:GetDescendants()) do
+					if obj:IsA("BasePart") then
+						local isPlayerPart = false
+						if player.Character and obj:IsDescendantOf(player.Character) then
+							isPlayerPart = true
+						end
+						
+						if not isPlayerPart then
+							if originalTransparenciesMap[obj] == nil then
+								originalTransparenciesMap[obj] = obj.Transparency
+							end
+							obj.Transparency = 0.85
+						end
+					end
+				end
+				task.wait(1)
+			end
+		end)
+	else
+		xrayBtn.Text = "RAIO X: OFF"
+		TweenService:Create(
+			xrayBtn,
+			TweenInfo.new(0.15),
+			{BackgroundColor3 = Color3.fromRGB(45, 45, 50)}
+		):Play()
+
+		xrayEnabled = false
+
+		for obj, originalTrans in pairs(originalTransparenciesMap) do
+			if obj and obj.Parent then
+				obj.Transparency = originalTrans
+			end
+		end
+		originalTransparenciesMap = {}
+	end
+end)
+
+-- ABRIR / FECHAR
+local opened = true
+
+close.MouseButton1Click:Connect(function()
+
+	opened = not opened
+
+	if opened then
+
+		content.Visible = true
+		close.Text = "×"
+
+		TweenService:Create(
+			main,
+			TweenInfo.new(
+				0.22,
+				Enum.EasingStyle.Quint,
+				Enum.EasingDirection.Out
+			),
+			{Size = OPEN_SIZE}
+		):Play()
+
+	else
+
+		close.Text = "+"
+
+		TweenService:Create(
+			main,
+			TweenInfo.new(
+				0.22,
+				Enum.EasingStyle.Quint,
+				Enum.EasingDirection.Out
+			),
+			{Size = CLOSED_SIZE}
+		):Play()
+
+		task.delay(0.15, function()
+			if not opened then
+				content.Visible = false
+			end
+		end)
+	end
+end)
+
+-- ARRASTAR PELA PARTE DE CIMA
+local dragging = false
+local dragStart
+local startPosition
+
+top.InputBegan:Connect(function(input)
+
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+	or input.UserInputType == Enum.UserInputType.Touch then
+
+		dragging = true
+		dragStart = input.Position
+		startPosition = main.Position
+
+		input.Changed:Connect(function()
+
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+
+		end)
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+
+	if not dragging then
+		return
+	end
+
+	if input.UserInputType == Enum.UserInputType.MouseMovement
+	or input.UserInputType == Enum.UserInputType.Touch then
+
+		local delta = input.Position - dragStart
+
+		main.Position = UDim2.new(
+			startPosition.X.Scale,
+			startPosition.X.Offset + delta.X,
+			startPosition.Y.Scale,
+			startPosition.Y.Offset + delta.Y
+		)
+	end
+end)
